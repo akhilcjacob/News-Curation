@@ -1,12 +1,12 @@
 package com.example.akhil.thedailycuration;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,54 +15,76 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
-import com.example.akhil.thedailycuration.models.LinkAdapter;
-import com.example.akhil.thedailycuration.models.LinkInfo;
+import com.example.akhil.thedailycuration.adapters.adapter;
+import com.example.akhil.thedailycuration.helpers.RSSParser;
+import com.prof.rssparser.Article;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static adapter adapter = null;
+
+    private Toolbar toolbar;
+    private DrawerLayout drawer;
+    private SwipeRefreshLayout swipeRefresh;
+
+    public static void updateCards(List<Article> articles) {
+        adapter.addAllItems(articles);
+        adapter.notifyDataSetChanged();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        //initialize components
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         final RecyclerView recList = (RecyclerView) findViewById(R.id.cardList);
-
         recList.setHasFixedSize(true);
+
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
+
         recList.setLayoutManager(llm);
+        adapter = new adapter(MainActivity.this);
+        recList.setAdapter(adapter);
 
-        final LinkAdapter ca = new LinkAdapter(generateList());
-        recList.setAdapter(ca);
+        swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipeRefresh);
+        swipeRefresh.setColorSchemeResources( android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light );
+        swipeRefresh.setProgressViewEndTarget(false, 300);
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                parseSources();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeRefresh.setRefreshing(false);
+                    }
+                },3000);
+            }
 
-        ItemTouchHelper.SimpleCallback itemTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+        });
+        ItemTouchHelper.SimpleCallback itemTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 return false;
@@ -70,10 +92,14 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                ca.removeItem(viewHolder.getAdapterPosition());
+                if (adapter.contains(viewHolder.getAdapterPosition())) {
+                    adapter.removeItem(viewHolder.getAdapterPosition());
+                }
             }
         };
         new ItemTouchHelper(itemTouchHelper).attachToRecyclerView(recList);
+
+//        parseSources();
 
     }
 
@@ -134,15 +160,9 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private List<LinkInfo> generateList(){
-//        Document doc = Jsoup.connect("").get();
-//        List<LinkInfo> li = new ArrayList<>();
-//        for(Sources s : Sources.values()){
-//            LinkInfo temp = new LinkInfo();
-//            temp.title
-//            li.add();
-//        }
-//        return li;
-        return null;
+    public void parseSources() {
+        for (Sources s : Sources.values()) {
+            new RSSParser().parse(s);
+        }
     }
 }
