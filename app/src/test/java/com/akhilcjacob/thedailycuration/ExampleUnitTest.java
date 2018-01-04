@@ -1,4 +1,4 @@
-package com.example.akhil.thedailycuration;
+package com.akhilcjacob.thedailycuration;
 
 import org.junit.Test;
 
