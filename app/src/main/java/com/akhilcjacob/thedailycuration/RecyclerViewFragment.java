@@ -1,6 +1,8 @@
 package com.akhilcjacob.thedailycuration;
 
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +16,7 @@ import com.akhilcjacob.thedailycuration.adapters.ArticleAdapter;
 import com.akhilcjacob.thedailycuration.helpers.RSSParser;
 import com.prof.rssparser.Article;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +31,6 @@ public class RecyclerViewFragment extends Fragment {
     protected LinearLayoutManager layoutManager;
 
     public RecyclerViewFragment() {
-
     }
 
     public static void updateCards(List<Article> list) {
@@ -46,7 +48,7 @@ public class RecyclerViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_recycler_view, container, false);
         rootView.setTag(TAG);
-        //Add swipe to refresh to card-view
+        //Add swipe to refresh to activity_card-view
         recyclerView = rootView.findViewById(R.id.cardList);
         recyclerView.setHasFixedSize(true);
 
@@ -56,7 +58,6 @@ public class RecyclerViewFragment extends Fragment {
 
         articleAdapter = new ArticleAdapter(getActivity());
         recyclerView.setAdapter(articleAdapter);
-
         ItemTouchHelper.SimpleCallback itemTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -87,15 +88,15 @@ public class RecyclerViewFragment extends Fragment {
                 parseSources();
             }
         });
-        //Read in data
         parseSources();
         return rootView;
     }
 
-    private void parseSources() {
+    public void parseSources() {
         swipeRefresh.setRefreshing(true);
         for (Sources s : Sources.values()) {
             new RSSParser().parse(s);
         }
     }
+
 }

@@ -51,8 +51,6 @@
             android:gravity="bottom"
             android:text="brief explanation"
             style="@style/TextAppearance.AppCompat.Small"/>
-
-
-
     </RelativeLayout>
+
 </android.support.v7.widget.CardView>

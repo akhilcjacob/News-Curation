@@ -3,6 +3,8 @@ package com.akhilcjacob.thedailycuration.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +29,7 @@ import java.util.List;
 /**
  * Created by akhil on 12/24/17.
  */
-public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.LinkHolder> {
+public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.LinkHolder>  {
     private List<Article> linkList;
     private Context context;
 
@@ -52,10 +54,6 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.LinkHold
     public void removeItem(int position) {
         linkList.remove(position);
         notifyItemRemoved(position);
-    }
-
-    public void addItem(Article item) {
-        linkList.add(item);
     }
 
     public void addAllItems(List<Article> items) {
@@ -100,7 +98,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.LinkHold
 
     @Override
     public LinkHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.card, viewGroup, false);
+        View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.activity_card, viewGroup, false);
         return new LinkHolder(itemView);
     }
 
@@ -136,6 +134,11 @@ public class ArticleAdapter extends RecyclerView.Adapter<ArticleAdapter.LinkHold
             }
         }
         linkList = result;
+    }
+
+
+    public void setContext(Context context) {
+        this.context = context;
     }
 
     class LinkHolder extends RecyclerView.ViewHolder {
